@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Latest Solar Flare Intensity</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    #intensity {
+      font-size: 5em;
+      margin-top: 20px;
+      color: #ffcc00;
+    }
+  </style>
+</head>
+<body>
+  <h1>Latest Solar Flare Intensity</h1>
+  <div id="intensity">Loading...</div>
+
+  <script>
+    const apiKey = "DEMO_KEY"; // replace with your own key
+    const startDate = "2025-10-01";
+    const endDate = "2025-10-25";
+    const url = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}&api_key=${apiKey}`;
+
+    async function showLatestFlare() {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.length === 0) {
+          document.getElementById("intensity").textContent = "No flares found";
+          return;
+        }
+
+        // Sort by peakTime (latest last)
+        data.sort((a, b) => new Date(a.peakTime) - new Date(b.peakTime));
+
+        // Display only the classType
+        const latestClass = data[data.length - 1].classType;
+        document.getElementById("intensity").textContent = latestClass;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("intensity").textContent = "Error loading data";
+      }
+    }
+
+    showLatestFlare();
+  </script>
+</body>
+</html>
