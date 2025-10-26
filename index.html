@@ -19,10 +19,14 @@
   </style>
 </head>
 <body>
+  
   <h1>Latest Solar Flare Intensity</h1>
   <div id="intensity">Loading...</div>
+  <button onclick="port = await navigator.serial.requestPort(); await port.open({ baudRate: 9600 });">Open port</button>
+  <button id="sendBtn">Send data to arduino</button>
 
   <script>
+
     const apiKey = "NASA_KEY"; // replace with your own key
     const startDate = "2025-10-01";
     const endDate = "2025-10-25";
@@ -52,6 +56,18 @@
     }
 
     showLatestFlare();
+
+    document.getElementById("sendBtn").addEventListener("click", async () => {
+      if (!writer) {
+        alert("Open the serial port first!");
+        return;
+      }
+
+     writer = port.writable.getWriter();
+  document.getElementById('sendBtn').addEventListener('click', async () => {
+    const data = new TextEncoder().encode(latestClass);
+    await writer.write(data);
+    
   </script>
 </body>
 </html>
