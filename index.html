@@ -22,7 +22,7 @@
   
   <h1>Latest Solar Flare Intensity</h1>
   <div id="intensity">Loading...</div>
-  <button onclick="port = await navigator.serial.requestPort(); await port.open({ baudRate: 9600 });">Open port</button>
+  <button id="openBtn">Open port</button>
   <button id="sendBtn">Send data to arduino</button>
 
   <script>
@@ -31,6 +31,10 @@
     const startDate = "2025-10-01";
     const endDate = "2025-10-25";
     const url = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}&api_key=${apiKey}`;
+
+    let port;
+    let writer;
+    let latestClass;
 
     async function showLatestFlare() {
       try {
@@ -46,7 +50,7 @@
         data.sort((a, b) => new Date(a.peakTime) - new Date(b.peakTime));
 
         // Display only the classType
-        const latestClass = data[data.length - 1].classType;
+        latestClass = data[data.length - 1].classType;
         document.getElementById("intensity").textContent = latestClass;
 
       } catch (err) {
@@ -57,17 +61,32 @@
 
     showLatestFlare();
 
+    document.getElementById("openBtn").addEventListener("click", async () => {
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+        writer = port.writable.getWriter();
+        alert("Port opened successfully!");
+      } catch (err) {
+        console.error("Error opening port:", err);
+        alert("Failed to open port. Make sure your Arduino is connected and you are using a supported browser (like Chrome) over HTTPS or localhost.");
+      }
+    });
+
     document.getElementById("sendBtn").addEventListener("click", async () => {
       if (!writer) {
         alert("Open the serial port first!");
         return;
       }
+      if (!latestClass) {
+        alert("No flare data to send!");
+        return;
+      }
 
-     writer = port.writable.getWriter();
-  document.getElementById('sendBtn').addEventListener('click', async () => {
-    const data = new TextEncoder().encode(latestClass);
-    await writer.write(data);
-    
+      const data = new TextEncoder().encode(latestClass + "\n");
+      await writer.write(data);
+    });
+
   </script>
 </body>
 </html>
